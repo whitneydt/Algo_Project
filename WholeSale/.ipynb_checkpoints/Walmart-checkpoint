@@ -1,0 +1,279 @@
+# Show imports
+import numpy as np
+import pandas as pd
+import yfinance as yf
+import hvplot.pandas
+import plotly.graph_objs as go
+from newsapi.newsapi_client import NewsApiClient
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from pathlib import Path
+import os
+from datetime import datetime, timedelta
+import pandas as pd
+import mplfinance as mpf
+
+# Show imports
+import numpy as np
+import pandas as pd
+import yfinance as yf
+import hvplot.pandas
+import plotly.graph_objs as go
+from newsapi.newsapi_client import NewsApiClient
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from pathlib import Path
+import os
+from datetime import datetime, timedelta
+import pandas as pd
+import mplfinance as mpf
+#pull data from yahoo finance
+data =yf.download(tickers='WMT', period='max', interval = '1d', start='2007-01-01')
+[*********************100%***********************]  1 of 1 completed
+# Show data
+print(data)
+# Show data
+print(data)
+Open	High	Low	Close	Adj Close	Volume
+Date						
+2007-01-03	47.090000	48.299999	47.060001	47.549999	34.164410	35687300
+2007-01-04	47.799999	47.990002	47.320000	47.779999	34.329666	17073000
+2007-01-05	47.500000	47.799999	47.150002	47.389999	34.049435	13556900
+2007-01-08	46.910000	47.310001	46.900002	47.000000	33.769241	16396400
+2007-01-09	47.000000	47.669998	47.000000	47.389999	34.049435	14643200
+...	...	...	...	...	...	...
+2021-07-21	142.500000	142.539993	140.710007	141.169998	141.169998	6197300
+2021-07-22	141.130005	142.119995	140.800003	141.270004	141.270004	4337800
+2021-07-23	141.520004	142.720001	141.009995	142.429993	142.429993	5314100
+2021-07-26	142.360001	143.860001	141.460007	142.630005	142.630005	6171000
+2021-07-27	143.000000	143.000000	141.960007	142.619995	142.619995	4468569
+3667 rows × 6 columns
+
+# build dataframe
+
+WMT_df = pd.DataFrame(data)
+WMT_df.head(10)
+
+# change df to csv
+WMT_csv = WMT_df.to_csv('/users/manu/desktop/project_2/walmart_csv', index=True)
+
+#Show the df
+WMT_df.head(10)
+
+# build dataframe
+​
+WMT_df = pd.DataFrame(data)
+WMT_df.head(10)
+​
+# change df to csv
+WMT_csv = WMT_df.to_csv('/users/manu/desktop/project_2/walmart_csv', index=True)
+​
+#Show the df
+WMT_df.head(10)
+​
+Open	High	Low	Close	Adj Close	Volume
+Date						
+2007-01-03	47.090000	48.299999	47.060001	47.549999	34.164410	35687300
+2007-01-04	47.799999	47.990002	47.320000	47.779999	34.329666	17073000
+2007-01-05	47.500000	47.799999	47.150002	47.389999	34.049435	13556900
+2007-01-08	46.910000	47.310001	46.900002	47.000000	33.769241	16396400
+2007-01-09	47.000000	47.669998	47.000000	47.389999	34.049435	14643200
+2007-01-10	47.049999	47.619999	46.509998	47.279999	33.970409	13348100
+2007-01-11	47.270000	47.730000	47.209999	47.599998	34.200325	14823200
+2007-01-12	47.619999	48.110001	47.209999	47.980000	34.473358	13910800
+2007-01-16	47.930000	48.480000	47.790001	48.310001	34.710464	14482400
+2007-01-17	48.320000	48.410000	48.090000	48.200001	34.631424	11305400
+#Show Close Only
+WMT_close = WMT_df.drop(columns =['Open','High','Low','Adj Close','Volume'])
+WMT_close.head(10)
+#Show Close Only
+WMT_close = WMT_df.drop(columns =['Open','High','Low','Adj Close','Volume'])
+WMT_close.head(10)
+Close
+Date	
+2007-01-03	47.549999
+2007-01-04	47.779999
+2007-01-05	47.389999
+2007-01-08	47.000000
+2007-01-09	47.389999
+2007-01-10	47.279999
+2007-01-11	47.599998
+2007-01-12	47.980000
+2007-01-16	48.310001
+2007-01-17	48.200001
+WMT_returns = WMT_close.pct_change().dropna()
+WMT_returns
+WMT_returns = WMT_close.pct_change().dropna()
+WMT_returns
+Close
+Date	
+2007-01-04	0.004837
+2007-01-05	-0.008162
+2007-01-08	-0.008230
+2007-01-09	0.008298
+2007-01-10	-0.002321
+...	...
+2021-07-21	-0.004934
+2021-07-22	0.000708
+2021-07-23	0.008211
+2021-07-26	0.001404
+2021-07-27	-0.000070
+3666 rows × 1 columns
+
+# Access to the News Api
+newsapi = NewsApiClient(api_key='ce3e78ab07ed4649a677e4da44c06a82')
+# Access to the News Api
+newsapi = NewsApiClient(api_key='ce3e78ab07ed4649a677e4da44c06a82')
+# Set current date and the date from one month ago using the ISO format
+current_date = pd.Timestamp(datetime.now(), tz="America/New_York").isoformat()
+past_date = pd.Timestamp(datetime.now()- timedelta(30), tz="America/New_York").isoformat()
+# Set current date and the date from one month ago using the ISO format
+current_date = pd.Timestamp(datetime.now(), tz="America/New_York").isoformat()
+past_date = pd.Timestamp(datetime.now()- timedelta(30), tz="America/New_York").isoformat()
+# Define a function to build news df
+def create_df(news, language):
+    articles = []
+    for article in news:
+        try:
+            title = article["title"]
+            description = article["description"]
+            text = article["content"]
+            date = article["publishedAt"][:10]
+
+            articles.append({
+                "title": title,
+                "description": description,
+                "text": text,
+                "date": date,
+                "language": language
+            })
+        except AttributeError:
+            pass
+
+    return pd.DataFrame(articles)
+# Define a function to build news df
+def create_df(news, language):
+    articles = []
+    for article in news:
+        try:
+            title = article["title"]
+            description = article["description"]
+            text = article["content"]
+            date = article["publishedAt"][:10]
+​
+            articles.append({
+                "title": title,
+                "description": description,
+                "text": text,
+                "date": date,
+                "language": language
+            })
+        except AttributeError:
+            pass
+​
+    return pd.DataFrame(articles)
+# Pull all the Walmart Stock headlines data from 2008 
+WMT_news_en = newsapi.get_everything(
+    q=" WMT AND Walmart AND 2008",
+    language="en"
+)
+# Pull all the Walmart Stock headlines data from 2008 
+WMT_news_en = newsapi.get_everything(
+    q=" WMT AND Walmart AND 2008",
+    language="en"
+)
+# Show the total number of news
+print(WMT_news_en["totalResults"])
+# Show the total number of news
+print(WMT_news_en["totalResults"])
+2
+# Create a DataFrame with the Walmart News
+WMT_en_df = create_df(WMT_news_en["articles"], "en")
+WMT_en_df
+# Create a DataFrame with the Walmart News
+WMT_en_df = create_df(WMT_news_en["articles"], "en")
+WMT_en_df
+
+
+# Create CSV from News df
+WMT_en_df.to_csv('/users/manu/desktop/project_2/WMT_csv', index=False, encoding='utf-8-sig')
+
+
+
+# define  sentiment analysis  
+WMT_sentiment = []
+analyzer = SentimentIntensityAnalyzer()
+
+for article in WMT_news_en['articles']:
+    try:
+        date = article["publishedAt"][:10]
+        text = article["content"][0:198]
+        sentiment = analyzer.polarity_scores(text)
+        pos = sentiment['pos']
+        neu = sentiment["neu"]
+        neg = sentiment["neg"]
+        compound = sentiment["compound"] 
+        
+        WMT_sentiment.append({
+            "text": text,
+            "date": date,
+            "positive": pos,
+            "neutral": neu,
+            "negative": neg,
+            "compound": compound 
+        })
+        
+    except AttributeError:
+        pass
+# define  sentiment analysis  
+WMT_sentiment = []
+analyzer = SentimentIntensityAnalyzer()
+​
+for article in WMT_news_en['articles']:
+    try:
+        date = article["publishedAt"][:10]
+        text = article["content"][0:198]
+        sentiment = analyzer.polarity_scores(text)
+        pos = sentiment['pos']
+        neu = sentiment["neu"]
+        neg = sentiment["neg"]
+        compound = sentiment["compound"] 
+        
+        WMT_sentiment.append({
+            "text": text,
+            "date": date,
+            "positive": pos,
+            "neutral": neu,
+            "negative": neg,
+            "compound": compound 
+        })
+        
+    except AttributeError:
+        pass
+# Build a SIA DF
+WMT_S_df = pd.DataFrame(WMT_sentiment) 
+cols = ['date', 'positive', 'neutral', 'negative', 'compound', 'text']
+WMT_S_df = WMT_S_df[cols] 
+WMT_S_df.describe()
+# Build a SIA DF
+WMT_S_df = pd.DataFrame(WMT_sentiment) 
+cols = ['date', 'positive', 'neutral', 'negative', 'compound', 'text']
+WMT_S_df = WMT_S_df[cols] 
+WMT_S_df.describe()
+
+
+
+#Display a candle stick chart
+fig = go.Figure(data=[go.Candlestick(x=WMT_df.index,
+                open=WMT_df['Open'],
+                high=WMT_df['High'],
+                low=WMT_df['Low'],
+                close=WMT_df['Close'])])
+
+fig.show()
+#Display a candle stick chart
+fig = go.Figure(data=[go.Candlestick(x=WMT_df.index,
+                open=WMT_df['Open'],
+                high=WMT_df['High'],
+                low=WMT_df['Low'],
+                close=WMT_df['Close'])])
+​
+fig.show()
