@@ -1,0 +1,218 @@
+
+# Imports
+import numpy as np
+import pandas as pd
+import yfinance as yf
+import hvplot.pandas
+import plotly.graph_objs as go
+from newsapi.newsapi_client import NewsApiClient
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from pathlib import Path
+import os
+from datetime import datetime, timedelta
+import pandas as pd
+import mplfinance as mpf
+# Imports
+import numpy as np
+import pandas as pd
+import yfinance as yf
+import hvplot.pandas
+import plotly.graph_objs as go
+from newsapi.newsapi_client import NewsApiClient
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from pathlib import Path
+import os
+from datetime import datetime, timedelta
+import pandas as pd
+import mplfinance as mpf
+#pull data from yahoo finance
+data =yf.download(tickers='MSFT', period='max', interval = '1d', start='2007-01-01')
+#pull data from yahoo finance
+data =yf.download(tickers='MSFT', period='max', interval = '1d', start='2007-01-01')
+data
+# Show Data
+print(data)
+# build dataframe
+
+MSFT_df = pd.DataFrame(data)
+MSFT_df.head(10)
+
+# change df to csv
+MSFT_csv = MSFT_df.to_csv('/users/manu/desktop/project_2/walmart_csv', index=True)
+
+#Show the df
+MSFT_df.head(10)
+
+# build dataframe
+​
+MSFT_df = pd.DataFrame(data)
+MSFT_df.head(10)
+​
+# change df to csv
+MSFT_csv = MSFT_df.to_csv('/users/manu/desktop/project_2/MSFT_csv', index=True)
+​
+#Show the df
+MSFT_df.head(10)
+​
+#Show Close Only
+MSFT_close = MSFT_df.drop(columns =['Open','High','Low','Adj Close','Volume'])
+MSFT_close.head(10)
+#Show Close Only
+MSFT_close = MSFT_df.drop(columns =['Open','High','Low','Adj Close','Volume'])
+MSFT_close.head(10)
+MSFT_returns = MSFT_close.pct_change().dropna()
+MSFT_returns
+MSFT_returns = MSFT_close.pct_change().dropna()
+MSFT_returns
+# Access to the News Api
+newsapi = NewsApiClient(api_key='ce3e78ab07ed4649a677e4da44c06a82')
+# Access to the News Api
+newsapi = NewsApiClient(api_key='ce3e78ab07ed4649a677e4da44c06a82')
+# Set current date and the date from one month ago using the ISO format
+current_date = pd.Timestamp(datetime.now(), tz="America/New_York").isoformat()
+past_date = pd.Timestamp(datetime.now()- timedelta(30), tz="America/New_York").isoformat()
+# Set current date and the date from one month ago using the ISO format
+current_date = pd.Timestamp(datetime.now(), tz="America/New_York").isoformat()
+past_date = pd.Timestamp(datetime.now()- timedelta(30), tz="America/New_York").isoformat()
+# Define a function to build news df
+def create_df(news, language):
+    articles = []
+    for article in news:
+        try:
+            title = article["title"]
+            description = article["description"]
+            text = article["content"]
+            date = article["publishedAt"][:10]
+
+            articles.append({
+                "title": title,
+                "description": description,
+                "text": text,
+                "date": date,
+                "language": language
+            })
+        except AttributeError:
+            pass
+
+    return pd.DataFrame(articles)
+# Define a function to build news df
+def create_df(news, language):
+    articles = []
+    for article in news:
+        try:
+            title = article["title"]
+            description = article["description"]
+            text = article["content"]
+            date = article["publishedAt"][:10]
+​
+            articles.append({
+                "title": title,
+                "description": description,
+                "text": text,
+                "date": date,
+                "language": language
+            })
+        except AttributeError:
+            pass
+​
+    return pd.DataFrame(articles)
+# Pull all the Walmart Stock headlines data from 2008 
+MSFT_news_en = newsapi.get_everything(
+    q=" MSFT AND Microsoft AND 2008",
+    language="en"
+)
+# Pull all the Microsoft Stock headlines data from 2008 
+MSFT_news_en = newsapi.get_everything(
+    q=" MSFT AND Microsoft AND 2008",
+    language="en"
+)
+# Show the total number of news
+print(MSFT_news_en["totalResults"])
+# Show the total number of news
+print(MSFT_news_en["totalResults"])
+# Create a DataFrame with the Walmart News
+MSFT_en_df = create_df(MSFT_news_en["articles"], "en")
+MSFT_en_df
+# Create a DataFrame with the Microsoft News
+MSFT_en_df = create_df(MSFT_news_en["articles"], "en")
+MSFT_en_df
+# Create CSV from News df
+MSFT_en_df.to_csv('/users/manu/desktop/project_2/MSFT_csv', index=False, encoding='utf-8-sig')
+# Create CSV from News df
+MSFT_en_df.to_csv('/users/manu/desktop/project_2/MSFT_csv', index=False, encoding='utf-8-sig')
+# define  sentiment analysis  
+MSFT_sentiment = []
+analyzer = SentimentIntensityAnalyzer()
+
+for article in MSFT_news_en['articles']:
+    try:
+        date = article["publishedAt"][:10]
+        text = article["content"][0:198]
+        sentiment = analyzer.polarity_scores(text)
+        pos = sentiment['pos']
+        neu = sentiment["neu"]
+        neg = sentiment["neg"]
+        compound = sentiment["compound"] 
+        
+        MSFT_sentiment.append({
+            "text": text,
+            "date": date,
+            "positive": pos,
+            "neutral": neu,
+            "negative": neg,
+            "compound": compound 
+        })
+        
+    except AttributeError:
+        pass
+# define  sentiment analysis  
+MSFT_sentiment = []
+analyzer = SentimentIntensityAnalyzer()
+​
+for article in MSFT_news_en['articles']:
+    try:
+        date = article["publishedAt"][:10]
+        text = article["content"][0:198]
+        sentiment = analyzer.polarity_scores(text)
+        pos = sentiment['pos']
+        neu = sentiment["neu"]
+        neg = sentiment["neg"]
+        compound = sentiment["compound"] 
+        
+        MSFT_sentiment.append({
+            "text": text,
+            "date": date,
+            "positive": pos,
+            "neutral": neu,
+            "negative": neg,
+            "compound": compound 
+        })
+        
+    except AttributeError:
+        pass
+# Build a SIA DF
+MSFT_S_df = pd.DataFrame(MSFT_sentiment) 
+cols = ['date', 'positive', 'neutral', 'negative', 'compound', 'text']
+MSFT_S_df = MSFT_S_df[cols] 
+MSFT_S_df.describe()
+# Build a SIA DF
+MSFT_S_df = pd.DataFrame(MSFT_sentiment) 
+cols = ['date', 'positive', 'neutral', 'negative', 'compound', 'text']
+MSFT_S_df = MSFT_S_df[cols] 
+MSFT_S_df.describe()
+#Display a candle stick chart
+fig = go.Figure(data=[go.Candlestick(x=MSFT_df.index,
+                open=MSFT_df['Open'],
+                high=MSFT_df['High'],
+                low=MSFT_df['Low'],
+                close=MSFT_df['Close'])])
+
+fig.show()
+#Display a candle stick chart
+fig = go.Figure(data=[go.Candlestick(x=MSFT_df.index,
+                open=MSFT_df['Open'],
+                high=MSFT_df['High'],
+                low=MSFT_df['Low'],
+                close=MSFT_df['Close'])])
+​
+fig.show()
